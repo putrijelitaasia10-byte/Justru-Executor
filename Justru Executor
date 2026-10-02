@@ -1,0 +1,333 @@
+-- Justru Executor with Top Utility Bar for Dex Explorer
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local localPlayer = Players.LocalPlayer
+
+-- Ensure workspace folder exists (Exploit API)
+if makefolder and not isfolder("JustruWorkspace") then
+	makefolder("JustruWorkspace")
+end
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "JustruExecutor"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+-- Floating Toggle Icon Button
+local toggleIcon = Instance.new("TextButton")
+toggleIcon.Name = "ToggleIcon"
+toggleIcon.Size = UDim2.new(0, 45, 0, 45)
+toggleIcon.Position = UDim2.new(0, 20, 0.5, -100)
+toggleIcon.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleIcon.TextSize = 18
+toggleIcon.Font = Enum.Font.GothamBold
+toggleIcon.Text = "J"
+toggleIcon.Parent = screenGui
+
+local iconCorner = Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(0, 8)
+iconCorner.Parent = toggleIcon
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 700, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -350, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 6)
+mainCorner.Parent = mainFrame
+
+-- Top Bar (Draggable Area)
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 35)
+topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 6)
+topCorner.Parent = topBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -20, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Text = "Justru Executor // Lua Environment"
+titleLabel.Parent = topBar
+
+-- Top Utility Bar (Above the Editor, containing Dex Explorer)
+local utilityBar = Instance.new("Frame")
+utilityBar.Name = "UtilityBar"
+utilityBar.Size = UDim2.new(0, 480, 0, 30)
+utilityBar.Position = UDim2.new(0, 10, 0, 45)
+utilityBar.BackgroundTransparency = 1
+utilityBar.Parent = mainFrame
+
+-- Dex Explorer Button (Placed Above the Editor)
+local dexBtn = Instance.new("TextButton")
+dexBtn.Name = "DexButton"
+dexBtn.Size = UDim2.new(0, 130, 0, 30)
+dexBtn.Position = UDim2.new(0, 0, 0, 0)
+dexBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
+dexBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dexBtn.TextSize = 13
+dexBtn.Font = Enum.Font.GothamBold
+dexBtn.Text = "Dex Explorer"
+dexBtn.Parent = utilityBar
+
+local dexCorner = Instance.new("UICorner")
+dexCorner.CornerRadius = UDim.new(0, 4)
+dexCorner.Parent = dexBtn
+
+-- Code Editor Box (TextBox)
+local codeBox = Instance.new("TextBox")
+codeBox.Name = "CodeBox"
+codeBox.Size = UDim2.new(0, 480, 0, 190)
+codeBox.Position = UDim2.new(0, 10, 0, 85)
+codeBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+codeBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+codeBox.TextSize = 14
+codeBox.Font = Enum.Font.Code
+codeBox.MultiLine = true
+codeBox.ClearTextOnFocus = false
+codeBox.TextXAlignment = Enum.TextXAlignment.Left
+codeBox.TextYAlignment = Enum.TextYAlignment.Top
+codeBox.PlaceholderText = "-- Type your script here..."
+codeBox.Text = "print(\"Hello from Justru Executor!\")"
+codeBox.Parent = mainFrame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 4)
+boxCorner.Parent = codeBox
+
+-- Sidebar Frame for Saved Scripts
+local sidebar = Instance.new("Frame")
+sidebar.Name = "Sidebar"
+sidebar.Size = UDim2.new(0, 180, 0, 230)
+sidebar.Position = UDim2.new(0, 505, 0, 45)
+sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 4)
+sideCorner.Parent = sidebar
+
+local fileListScroll = Instance.new("ScrollingFrame")
+fileListScroll.Name = "FileList"
+fileListScroll.Size = UDim2.new(1, -10, 1, -10)
+fileListScroll.Position = UDim2.new(0, 5, 0, 5)
+fileListScroll.BackgroundTransparency = 1
+fileListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+fileListScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+fileListScroll.ScrollBarThickness = 4
+fileListScroll.Parent = sidebar
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+uiListLayout.Padding = UDim.new(0, 4)
+uiListLayout.Parent = fileListScroll
+
+-- File Name Input Box
+local fileNameBox = Instance.new("TextBox")
+fileNameBox.Name = "FileNameBox"
+fileNameBox.Size = UDim2.new(0, 180, 0, 35)
+fileNameBox.Position = UDim2.new(0, 505, 0, 280)
+fileNameBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+fileNameBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+fileNameBox.TextSize = 13
+fileNameBox.Font = Enum.Font.Code
+fileNameBox.PlaceholderText = "script_name.lua"
+fileNameBox.Text = ""
+fileNameBox.Parent = mainFrame
+
+local nameCorner = Instance.new("UICorner")
+nameCorner.CornerRadius = UDim.new(0, 4)
+nameCorner.Parent = fileNameBox
+
+-- Execute Button
+local executeBtn = Instance.new("TextButton")
+executeBtn.Name = "ExecuteButton"
+executeBtn.Size = UDim2.new(0, 110, 0, 35)
+executeBtn.Position = UDim2.new(0, 10, 0, 280)
+executeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+executeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+executeBtn.TextSize = 13
+executeBtn.Font = Enum.Font.GothamBold
+executeBtn.Text = "Execute"
+executeBtn.Parent = mainFrame
+
+local execCorner = Instance.new("UICorner")
+execCorner.CornerRadius = UDim.new(0, 4)
+execCorner.Parent = executeBtn
+
+-- Clear Button
+local clearBtn = Instance.new("TextButton")
+clearBtn.Name = "ClearButton"
+clearBtn.Size = UDim2.new(0, 100, 0, 35)
+clearBtn.Position = UDim2.new(0, 125, 0, 280)
+clearBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+clearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+clearBtn.TextSize = 13
+clearBtn.Font = Enum.Font.GothamBold
+clearBtn.Text = "Clear"
+clearBtn.Parent = mainFrame
+
+local clearCorner = Instance.new("UICorner")
+clearCorner.CornerRadius = UDim.new(0, 4)
+clearCorner.Parent = clearBtn
+
+-- Save Button
+local saveBtn = Instance.new("TextButton")
+saveBtn.Name = "SaveButton"
+saveBtn.Size = UDim2.new(0, 110, 0, 35)
+saveBtn.Position = UDim2.new(0, 230, 0, 280)
+saveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 60)
+saveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+saveBtn.TextSize = 13
+saveBtn.Font = Enum.Font.GothamBold
+saveBtn.Text = "Save"
+saveBtn.Parent = mainFrame
+
+local saveCorner = Instance.new("UICorner")
+saveCorner.CornerRadius = UDim.new(0, 4)
+saveCorner.Parent = saveBtn
+
+-- Toggle Icon Open/Close Logic
+toggleIcon.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- Function to refresh the file list sidebar
+local function refreshFileList()
+	for _, child in ipairs(fileListScroll:GetChildren()) do
+		if child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
+
+	if listfiles then
+		local success, files = pcall(listfiles, "JustruWorkspace")
+		if success and files then
+			for _, filePath in ipairs(files) do
+				local fileName = filePath:match("([^/]+)$") or filePath:match("([^\\]+)$")
+				
+				local fileBtn = Instance.new("TextButton")
+				fileBtn.Size = UDim2.new(1, 0, 0, 28)
+				fileBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				fileBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+				fileBtn.TextSize = 13
+				fileBtn.Font = Enum.Font.Code
+				fileBtn.Text = fileName
+				fileBtn.Parent = fileListScroll
+
+				local btnCorner = Instance.new("UICorner")
+				btnCorner.CornerRadius = UDim.new(0, 3)
+				btnCorner.Parent = fileBtn
+
+				-- Load script on click
+				fileBtn.MouseButton1Click:Connect(function()
+					local readSuccess, content = pcall(readfile, filePath)
+					if readSuccess and content then
+						codeBox.Text = content
+						fileNameBox.Text = fileName
+					end
+				end)
+			end
+		end
+	end
+end
+
+-- Save Script Logic
+saveBtn.MouseButton1Click:Connect(function()
+	local fileName = fileNameBox.Text
+	if fileName == "" then
+		fileName = "script_" .. math.random(1000, 9999) .. ".lua"
+		fileNameBox.Text = fileName
+	end
+	
+	if not string.match(fileName, "%.lua$") then
+		fileName = fileName .. ".lua"
+	end
+
+	if writefile then
+		pcall(writefile, "JustruWorkspace/" .. fileName, codeBox.Text)
+		refreshFileList()
+	end
+end)
+
+-- Execute Logic
+executeBtn.MouseButton1Click:Connect(function()
+	local source = codeBox.Text
+	local func, err = loadstring(source)
+	if func then
+		local success, runtimeErr = pcall(func)
+		if not success then
+			warn("[Justru Runtime Error]: " .. tostring(runtimeErr))
+		end
+	else
+		warn("[Justru Compile Error]: " .. tostring(err))
+	end
+end)
+
+-- Dex Explorer Button Logic
+dexBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Dex-PlusPlus-Decompiler-Fix-206651"))()
+	end)
+	if not success then
+		warn("[Dex Explorer Error]: " .. tostring(err))
+	end
+end)
+
+-- Clear Logic
+clearBtn.MouseButton1Click:Connect(function()
+	codeBox.Text = ""
+	fileNameBox.Text = ""
+end)
+
+-- Initial population of saved files
+refreshFileList()
+
+-- Draggable Window Logic
+local dragging, dragInput, dragStart, startPos
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
